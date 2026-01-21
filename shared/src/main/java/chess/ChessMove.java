@@ -8,22 +8,29 @@ package chess;
  */
 public class ChessMove {
 
+    private ChessPosition startPosition;
+    private ChessPosition endPosition;
+    private ChessPiece.PieceType promotionPiece;
+
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
+        this.promotionPiece = promotionPiece;
     }
 
     /**
      * @return ChessPosition of starting location
      */
     public ChessPosition getStartPosition() {
-        throw new RuntimeException("Not implemented");
+        return startPosition;
     }
 
     /**
      * @return ChessPosition of ending location
      */
     public ChessPosition getEndPosition() {
-        throw new RuntimeException("Not implemented");
+        return endPosition;
     }
 
     /**
@@ -33,6 +40,74 @@ public class ChessMove {
      * @return Type of piece to promote a pawn to, or null if no promotion
      */
     public ChessPiece.PieceType getPromotionPiece() {
-        throw new RuntimeException("Not implemented");
+        return promotionPiece;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null) {
+            return false;
+        }
+
+        if (this.getClass() != o.getClass()) {
+            return false;
+        }
+
+        ChessMove other = (ChessMove) o;
+
+        if (this.startPosition == null) {
+            if (other.startPosition != null) {
+                return false;
+            }
+        } else {
+            if (!this.startPosition.equals(other.startPosition)) {
+                return false;
+            }
+        }
+
+        if (this.endPosition == null) {
+            if (other.endPosition != null) {
+                return false;
+            }
+        } else {
+            if (!this.endPosition.equals(other.endPosition)) {
+                return false;
+            }
+        }
+
+        if (this.promotionPiece != other.promotionPiece) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+
+        if (startPosition != null) {
+            result = 31 * result + startPosition.hashCode();
+        } else {
+            result = 31 * result;
+        }
+
+        if (endPosition != null) {
+            result = 31 * result + endPosition.hashCode();
+        } else {
+            result = 31 * result;
+        }
+
+        if (promotionPiece != null) {
+            result = 31 * result + promotionPiece.hashCode();
+        } else {
+            result = 31 * result;
+        }
+
+        return result;
     }
 }
