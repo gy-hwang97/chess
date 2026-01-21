@@ -1,7 +1,5 @@
 package chess;
 
-import java.util.Objects;
-
 public class ChessPosition {
 
     private int row;
@@ -22,16 +20,37 @@ public class ChessPosition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null) return false;
-        if (getClass() != o.getClass()) return false;
-        ChessPosition that = (ChessPosition) o;
-        return row == that.row && column == that.column;
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null) {
+            return false;
+        }
+
+        if (this.getClass() != o.getClass()) {
+            return false;
+        }
+
+        ChessPosition other = (ChessPosition) o;
+
+        if (this.row != other.row) {
+            return false;
+        }
+
+        if (this.column != other.column) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(row, column);
+        int result = 17;
+        result = 31 * result + row;
+        result = 31 * result + column;
+        return result;
     }
 
     @Override
