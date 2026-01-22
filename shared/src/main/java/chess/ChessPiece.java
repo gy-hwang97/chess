@@ -52,7 +52,64 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        java.util.Collection<ChessMove> moves = new java.util.ArrayList<>();
+
+        if (type == PieceType.KNIGHT) {
+            int r = myPosition.getRow();
+            int c = myPosition.getColumn();
+
+            int[] dr = {2, 2, 1, 1, -1, -1, -2, -2};
+            int[] dc = {1, -1, 2, -2, 2, -2, 1, -1};
+
+            for (int i = 0; i < 8; i++) {
+                int nr = r + dr[i];
+                int nc = c + dc[i];
+
+                if (nr >= 1 && nr <= 8 && nc >= 1 && nc <= 8) {
+                    ChessPosition end = new ChessPosition(nr, nc);
+                    ChessPiece target = board.getPiece(end);
+
+                    if (target == null) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    } else {
+                        if (target.getTeamColor() != this.pieceColor) {
+                            moves.add(new ChessMove(myPosition, end, null));
+                        }
+                    }
+                }
+            }
+        }
+
+        if (type == PieceType.KING) {
+            int r = myPosition.getRow();
+            int c = myPosition.getColumn();
+
+            for (int rr = -1; rr <= 1; rr++) {
+                for (int cc = -1; cc <= 1; cc++) {
+                    if (rr == 0 && cc == 0) {
+                        // do nothing
+                    } else {
+                        int nr = r + rr;
+                        int nc = c + cc;
+
+                        if (nr >= 1 && nr <= 8 && nc >= 1 && nc <= 8) {
+                            ChessPosition end = new ChessPosition(nr, nc);
+                            ChessPiece target = board.getPiece(end);
+
+                            if (target == null) {
+                                moves.add(new ChessMove(myPosition, end, null));
+                            } else {
+                                if (target.getTeamColor() != this.pieceColor) {
+                                    moves.add(new ChessMove(myPosition, end, null));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return moves;
     }
 
     @Override
