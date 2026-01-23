@@ -109,6 +109,309 @@ public class ChessPiece {
             }
         }
 
+        if (type == PieceType.ROOK) {
+            int r = myPosition.getRow();
+            int c = myPosition.getColumn();
+
+            int rr = r + 1;
+            while (rr <= 8) {
+                ChessPosition end = new ChessPosition(rr, c);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                rr = rr + 1;
+            }
+
+            rr = r - 1;
+            while (rr >= 1) {
+                ChessPosition end = new ChessPosition(rr, c);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                rr = rr - 1;
+            }
+
+            int cc = c + 1;
+            while (cc <= 8) {
+                ChessPosition end = new ChessPosition(r, cc);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                cc = cc + 1;
+            }
+
+            cc = c - 1;
+            while (cc >= 1) {
+                ChessPosition end = new ChessPosition(r, cc);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                cc = cc - 1;
+            }
+        }
+
+        if (type == PieceType.BISHOP) {
+            int r = myPosition.getRow();
+            int c = myPosition.getColumn();
+
+            int rr = r + 1;
+            int cc = c + 1;
+            while (rr <= 8 && cc <= 8) {
+                ChessPosition end = new ChessPosition(rr, cc);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                rr = rr + 1;
+                cc = cc + 1;
+            }
+
+            rr = r + 1;
+            cc = c - 1;
+            while (rr <= 8 && cc >= 1) {
+                ChessPosition end = new ChessPosition(rr, cc);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                rr = rr + 1;
+                cc = cc - 1;
+            }
+
+            rr = r - 1;
+            cc = c + 1;
+            while (rr >= 1 && cc <= 8) {
+                ChessPosition end = new ChessPosition(rr, cc);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                rr = rr - 1;
+                cc = cc + 1;
+            }
+
+            rr = r - 1;
+            cc = c - 1;
+            while (rr >= 1 && cc >= 1) {
+                ChessPosition end = new ChessPosition(rr, cc);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                rr = rr - 1;
+                cc = cc - 1;
+            }
+        }
+
+        if (type == PieceType.QUEEN) {
+            int r = myPosition.getRow();
+            int c = myPosition.getColumn();
+
+            int rr = r + 1;
+            while (rr <= 8) {
+                ChessPosition end = new ChessPosition(rr, c);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                rr = rr + 1;
+            }
+
+            rr = r - 1;
+            while (rr >= 1) {
+                ChessPosition end = new ChessPosition(rr, c);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                rr = rr - 1;
+            }
+
+            int cc = c + 1;
+            while (cc <= 8) {
+                ChessPosition end = new ChessPosition(r, cc);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                cc = cc + 1;
+            }
+
+            cc = c - 1;
+            while (cc >= 1) {
+                ChessPosition end = new ChessPosition(r, cc);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                cc = cc - 1;
+            }
+
+            rr = r + 1;
+            cc = c + 1;
+            while (rr <= 8 && cc <= 8) {
+                ChessPosition end = new ChessPosition(rr, cc);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                rr = rr + 1;
+                cc = cc + 1;
+            }
+
+            rr = r + 1;
+            cc = c - 1;
+            while (rr <= 8 && cc >= 1) {
+                ChessPosition end = new ChessPosition(rr, cc);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                rr = rr + 1;
+                cc = cc - 1;
+            }
+
+            rr = r - 1;
+            cc = c + 1;
+            while (rr >= 1 && cc <= 8) {
+                ChessPosition end = new ChessPosition(rr, cc);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                rr = rr - 1;
+                cc = cc + 1;
+            }
+
+            rr = r - 1;
+            cc = c - 1;
+            while (rr >= 1 && cc >= 1) {
+                ChessPosition end = new ChessPosition(rr, cc);
+                ChessPiece target = board.getPiece(end);
+
+                if (target == null) {
+                    moves.add(new ChessMove(myPosition, end, null));
+                } else {
+                    if (target.getTeamColor() != this.pieceColor) {
+                        moves.add(new ChessMove(myPosition, end, null));
+                    }
+                    break;
+                }
+
+                rr = rr - 1;
+                cc = cc - 1;
+            }
+        }
+
         return moves;
     }
 
