@@ -412,6 +412,95 @@ public class ChessPiece {
             }
         }
 
+        if (type == PieceType.PAWN) {
+            int r = myPosition.getRow();
+            int c = myPosition.getColumn();
+
+            int dir;
+            int startRow;
+            int promoteRow;
+
+            if (this.pieceColor == ChessGame.TeamColor.WHITE) {
+                dir = 1;
+                startRow = 2;
+                promoteRow = 8;
+            } else {
+                dir = -1;
+                startRow = 7;
+                promoteRow = 1;
+            }
+
+            int oneStepRow = r + dir;
+
+            if (oneStepRow >= 1 && oneStepRow <= 8) {
+                ChessPosition oneStep = new ChessPosition(oneStepRow, c);
+                ChessPiece front = board.getPiece(oneStep);
+
+                if (front == null) {
+                    if (oneStepRow == promoteRow) {
+                        moves.add(new ChessMove(myPosition, oneStep, PieceType.QUEEN));
+                        moves.add(new ChessMove(myPosition, oneStep, PieceType.ROOK));
+                        moves.add(new ChessMove(myPosition, oneStep, PieceType.BISHOP));
+                        moves.add(new ChessMove(myPosition, oneStep, PieceType.KNIGHT));
+                    } else {
+                        moves.add(new ChessMove(myPosition, oneStep, null));
+                    }
+
+                    if (r == startRow) {
+                        int twoStepRow = r + (2 * dir);
+                        ChessPosition twoStep = new ChessPosition(twoStepRow, c);
+                        ChessPiece front2 = board.getPiece(twoStep);
+
+                        if (front2 == null) {
+                            moves.add(new ChessMove(myPosition, twoStep, null));
+                        }
+                    }
+                }
+            }
+
+            int captureRow = r + dir;
+
+            if (captureRow >= 1 && captureRow <= 8) {
+                int leftCol = c - 1;
+                if (leftCol >= 1) {
+                    ChessPosition leftCapture = new ChessPosition(captureRow, leftCol);
+                    ChessPiece target = board.getPiece(leftCapture);
+
+                    if (target != null) {
+                        if (target.getTeamColor() != this.pieceColor) {
+                            if (captureRow == promoteRow) {
+                                moves.add(new ChessMove(myPosition, leftCapture, PieceType.QUEEN));
+                                moves.add(new ChessMove(myPosition, leftCapture, PieceType.ROOK));
+                                moves.add(new ChessMove(myPosition, leftCapture, PieceType.BISHOP));
+                                moves.add(new ChessMove(myPosition, leftCapture, PieceType.KNIGHT));
+                            } else {
+                                moves.add(new ChessMove(myPosition, leftCapture, null));
+                            }
+                        }
+                    }
+                }
+
+                int rightCol = c + 1;
+                if (rightCol <= 8) {
+                    ChessPosition rightCapture = new ChessPosition(captureRow, rightCol);
+                    ChessPiece target = board.getPiece(rightCapture);
+
+                    if (target != null) {
+                        if (target.getTeamColor() != this.pieceColor) {
+                            if (captureRow == promoteRow) {
+                                moves.add(new ChessMove(myPosition, rightCapture, PieceType.QUEEN));
+                                moves.add(new ChessMove(myPosition, rightCapture, PieceType.ROOK));
+                                moves.add(new ChessMove(myPosition, rightCapture, PieceType.BISHOP));
+                                moves.add(new ChessMove(myPosition, rightCapture, PieceType.KNIGHT));
+                            } else {
+                                moves.add(new ChessMove(myPosition, rightCapture, null));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         return moves;
     }
 
