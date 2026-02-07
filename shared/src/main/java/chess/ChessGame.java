@@ -3,7 +3,7 @@ package chess;
 import java.util.Collection;
 import java.util.ArrayList;
 
-/**
+/**Because of an error I should commit again
  * For a class that can manage a chess game, making moves on a board
  * <p>
  * Note: You can add to this class, but you may not alter
