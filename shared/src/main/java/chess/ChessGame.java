@@ -53,6 +53,10 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
 
+        if (startPosition == null) {
+            return null;
+        }
+
         ChessPiece piece = board.getPiece(startPosition);
         if (piece == null) {
             return null;
@@ -109,6 +113,10 @@ public class ChessGame {
 
         ChessPosition startPosition = move.getStartPosition();
         ChessPosition endPosition = move.getEndPosition();
+
+        if (startPosition == null || endPosition == null) {
+            throw new InvalidMoveException();
+        }
 
         ChessPiece piece = board.getPiece(startPosition);
         if (piece == null) {
