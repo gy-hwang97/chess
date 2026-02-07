@@ -3,7 +3,7 @@ package chess;
 import java.util.Collection;
 import java.util.ArrayList;
 
-/**Because of an error I should commit again
+/**
  * For a class that can manage a chess game, making moves on a board
  * <p>
  * Note: You can add to this class, but you may not alter
@@ -78,7 +78,7 @@ public class ChessGame {
             ChessPiece pieceToPlace = movingPiece;
 
             if (move.getPromotionPiece() != null) {
-                if (movingPiece.getPieceType() == PieceType.PAWN) {
+                if (movingPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
                     pieceToPlace = new ChessPiece(movingPiece.getTeamColor(), move.getPromotionPiece());
                 }
             }
@@ -114,10 +114,6 @@ public class ChessGame {
         ChessPosition startPosition = move.getStartPosition();
         ChessPosition endPosition = move.getEndPosition();
 
-        if (startPosition == null || endPosition == null) {
-            throw new InvalidMoveException();
-        }
-
         ChessPiece piece = board.getPiece(startPosition);
         if (piece == null) {
             throw new InvalidMoveException();
@@ -146,7 +142,7 @@ public class ChessGame {
         ChessPiece pieceToPlace = piece;
 
         if (move.getPromotionPiece() != null) {
-            if (piece.getPieceType() == PieceType.PAWN) {
+            if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
                 pieceToPlace = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
             }
         }
@@ -311,7 +307,7 @@ public class ChessGame {
 
                 if (piece != null) {
                     if (piece.getTeamColor() == t) {
-                        if (piece.getPieceType() == PieceType.KING) {
+                        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
                             return p;
                         }
                     }
