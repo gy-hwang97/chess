@@ -7,6 +7,8 @@ import dataaccess.GameDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import model.GameData;
+import model.result.GameListItem;
+import model.result.ListGamesResult;
 
 public class ListGamesService {
     private AuthDAO authDAO;
