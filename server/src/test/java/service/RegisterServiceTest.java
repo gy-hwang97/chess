@@ -3,6 +3,8 @@ package service;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
 import org.junit.jupiter.api.Test;
+import model.request.RegisterRequest;
+import model.result.RegisterResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
