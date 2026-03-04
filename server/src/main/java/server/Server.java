@@ -45,9 +45,6 @@ public class Server {
                 service.clear();
                 ctx.status(200);
                 ctx.json(Map.of());
-            } catch (ServiceException e) {
-                ctx.status(e.statusCode());
-                ctx.json(Map.of("message", e.getMessage()));
             } catch (Exception e) {
                 ctx.status(500);
                 ctx.json(Map.of("message", "Error: " + e.getMessage()));
