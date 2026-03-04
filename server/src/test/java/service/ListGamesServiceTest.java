@@ -6,6 +6,7 @@ import model.AuthData;
 import model.GameData;
 import chess.ChessGame;
 import org.junit.jupiter.api.Test;
+import model.result.ListGamesResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
