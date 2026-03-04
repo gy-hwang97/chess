@@ -6,6 +6,8 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import model.UserData;
 import model.AuthData;
+import model.request.LoginRequest;
+import model.result.LoginResult;
 
 public class LoginService {
     private UserDAO userDAO;
