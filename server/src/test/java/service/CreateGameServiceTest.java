@@ -4,6 +4,8 @@ import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import model.AuthData;
 import org.junit.jupiter.api.Test;
+import model.request.CreateGameRequest;
+import model.result.CreateGameResult;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
