@@ -6,6 +6,8 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import model.UserData;
 import model.AuthData;
+import model.request.RegisterRequest;
+import model.result.RegisterResult;
 
 public class RegisterService {
     private UserDAO userDAO;
