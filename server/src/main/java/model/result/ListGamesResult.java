@@ -1,4 +1,4 @@
-package model.request;
+package model.result;
 
 import java.util.List;
 
