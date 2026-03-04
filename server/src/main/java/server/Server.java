@@ -28,134 +28,136 @@ import service.ServiceException;
 import java.util.Map;
 
 public class Server {
-
-    private final Javalin javalin;
     private final Gson gson = new Gson();
 
     private final UserDAO userDAO = new MemoryUserDAO();
     private final AuthDAO authDAO = new MemoryAuthDAO();
     private final GameDAO gameDAO = new MemoryGameDAO();
 
-    public Server() {
-        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+    private Javalin app;
 
-        javalin.delete("/db", ctx -> {
+    public int run(int desiredPort) {
+        app = Javalin.create(config -> {
+            config.staticFiles.add("web");
+        });
+
+        app.delete("/db", ctx -> {
             try {
                 ClearService service = new ClearService(userDAO, authDAO, gameDAO);
                 service.clear();
                 ctx.status(200);
-                ctx.json(Map.of());
+                ctx.result(gson.toJson(Map.of()));
             } catch (Exception e) {
                 ctx.status(500);
-                ctx.json(Map.of("message", "Error: " + e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
             }
         });
 
-        javalin.post("/user", ctx -> {
+        app.post("/user", ctx -> {
             try {
                 RegisterRequest request = gson.fromJson(ctx.body(), RegisterRequest.class);
                 RegisterService service = new RegisterService(userDAO, authDAO);
                 RegisterResult result = service.register(request);
                 ctx.status(200);
-                ctx.json(result);
+                ctx.result(gson.toJson(result));
             } catch (ServiceException e) {
                 ctx.status(e.statusCode());
-                ctx.json(Map.of("message", e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", e.getMessage())));
             } catch (Exception e) {
                 ctx.status(500);
-                ctx.json(Map.of("message", "Error: " + e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
             }
         });
 
-        javalin.post("/session", ctx -> {
+        app.post("/session", ctx -> {
             try {
                 LoginRequest request = gson.fromJson(ctx.body(), LoginRequest.class);
                 LoginService service = new LoginService(userDAO, authDAO);
                 LoginResult result = service.login(request);
                 ctx.status(200);
-                ctx.json(result);
+                ctx.result(gson.toJson(result));
             } catch (ServiceException e) {
                 ctx.status(e.statusCode());
-                ctx.json(Map.of("message", e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", e.getMessage())));
             } catch (Exception e) {
                 ctx.status(500);
-                ctx.json(Map.of("message", "Error: " + e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
             }
         });
 
-        javalin.delete("/session", ctx -> {
+        app.delete("/session", ctx -> {
             try {
-                String authToken = ctx.header("authorization");
+                String authToken = ctx.header("Authorization");
                 LogoutService service = new LogoutService(authDAO);
                 service.logout(authToken);
                 ctx.status(200);
-                ctx.json(Map.of());
+                ctx.result(gson.toJson(Map.of()));
             } catch (ServiceException e) {
                 ctx.status(e.statusCode());
-                ctx.json(Map.of("message", e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", e.getMessage())));
             } catch (Exception e) {
                 ctx.status(500);
-                ctx.json(Map.of("message", "Error: " + e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
             }
         });
 
-        javalin.post("/game", ctx -> {
+        app.post("/game", ctx -> {
             try {
-                String authToken = ctx.header("authorization");
+                String authToken = ctx.header("Authorization");
                 CreateGameRequest request = gson.fromJson(ctx.body(), CreateGameRequest.class);
                 CreateGameService service = new CreateGameService(authDAO, gameDAO);
                 CreateGameResult result = service.createGame(authToken, request);
                 ctx.status(200);
-                ctx.json(result);
+                ctx.result(gson.toJson(result));
             } catch (ServiceException e) {
                 ctx.status(e.statusCode());
-                ctx.json(Map.of("message", e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", e.getMessage())));
             } catch (Exception e) {
                 ctx.status(500);
-                ctx.json(Map.of("message", "Error: " + e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
             }
         });
 
-        javalin.get("/game", ctx -> {
+        app.get("/game", ctx -> {
             try {
-                String authToken = ctx.header("authorization");
+                String authToken = ctx.header("Authorization");
                 ListGamesService service = new ListGamesService(authDAO, gameDAO);
                 ListGamesResult result = service.listGames(authToken);
                 ctx.status(200);
-                ctx.json(result);
+                ctx.result(gson.toJson(result));
             } catch (ServiceException e) {
                 ctx.status(e.statusCode());
-                ctx.json(Map.of("message", e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", e.getMessage())));
             } catch (Exception e) {
                 ctx.status(500);
-                ctx.json(Map.of("message", "Error: " + e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
             }
         });
 
-        javalin.put("/game", ctx -> {
+        app.put("/game", ctx -> {
             try {
-                String authToken = ctx.header("authorization");
+                String authToken = ctx.header("Authorization");
                 JoinGameRequest request = gson.fromJson(ctx.body(), JoinGameRequest.class);
                 JoinGameService service = new JoinGameService(authDAO, gameDAO);
                 service.joinGame(authToken, request);
                 ctx.status(200);
-                ctx.json(Map.of());
+                ctx.result(gson.toJson(Map.of()));
             } catch (ServiceException e) {
                 ctx.status(e.statusCode());
-                ctx.json(Map.of("message", e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", e.getMessage())));
             } catch (Exception e) {
                 ctx.status(500);
-                ctx.json(Map.of("message", "Error: " + e.getMessage()));
+                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
             }
         });
-    }
 
-    public int run(int desiredPort) {
-        javalin.start(desiredPort);
-        return javalin.port();
+        app.start(desiredPort);
+        return app.port();
     }
 
     public void stop() {
-        javalin.stop();
+        if (app != null) {
+            app.stop();
+        }
     }
 }
