@@ -8,20 +8,17 @@ import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
 import dataaccess.UserDAO;
 import io.javalin.Javalin;
+import io.javalin.http.Context;
+import model.request.CreateGameRequest;
+import model.request.JoinGameRequest;
+import model.request.LoginRequest;
+import model.request.RegisterRequest;
 import service.ClearService;
-import service.CreateGameRequest;
-import service.CreateGameResult;
 import service.CreateGameService;
-import service.JoinGameRequest;
 import service.JoinGameService;
-import service.ListGamesResult;
 import service.ListGamesService;
-import service.LoginRequest;
-import service.LoginResult;
 import service.LoginService;
 import service.LogoutService;
-import service.RegisterRequest;
-import service.RegisterResult;
 import service.RegisterService;
 import service.ServiceException;
 
@@ -34,130 +31,143 @@ public class Server {
     private final AuthDAO authDAO = new MemoryAuthDAO();
     private final GameDAO gameDAO = new MemoryGameDAO();
 
-    private Javalin app;
+    private Javalin javalin;
 
     public int run(int desiredPort) {
-        app = Javalin.create(config -> {
+        javalin = Javalin.create(config -> {
             config.staticFiles.add("web");
         });
 
-        app.delete("/db", ctx -> {
-            try {
-                ClearService service = new ClearService(userDAO, authDAO, gameDAO);
-                service.clear();
-                ctx.status(200);
-                ctx.result(gson.toJson(Map.of()));
-            } catch (Exception e) {
-                ctx.status(500);
-                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
-            }
-        });
+        registerRoutes();
 
-        app.post("/user", ctx -> {
-            try {
-                RegisterRequest request = gson.fromJson(ctx.body(), RegisterRequest.class);
-                RegisterService service = new RegisterService(userDAO, authDAO);
-                RegisterResult result = service.register(request);
-                ctx.status(200);
-                ctx.result(gson.toJson(result));
-            } catch (ServiceException e) {
-                ctx.status(e.statusCode());
-                ctx.result(gson.toJson(Map.of("message", e.getMessage())));
-            } catch (Exception e) {
-                ctx.status(500);
-                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
-            }
-        });
-
-        app.post("/session", ctx -> {
-            try {
-                LoginRequest request = gson.fromJson(ctx.body(), LoginRequest.class);
-                LoginService service = new LoginService(userDAO, authDAO);
-                LoginResult result = service.login(request);
-                ctx.status(200);
-                ctx.result(gson.toJson(result));
-            } catch (ServiceException e) {
-                ctx.status(e.statusCode());
-                ctx.result(gson.toJson(Map.of("message", e.getMessage())));
-            } catch (Exception e) {
-                ctx.status(500);
-                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
-            }
-        });
-
-        app.delete("/session", ctx -> {
-            try {
-                String authToken = ctx.header("Authorization");
-                LogoutService service = new LogoutService(authDAO);
-                service.logout(authToken);
-                ctx.status(200);
-                ctx.result(gson.toJson(Map.of()));
-            } catch (ServiceException e) {
-                ctx.status(e.statusCode());
-                ctx.result(gson.toJson(Map.of("message", e.getMessage())));
-            } catch (Exception e) {
-                ctx.status(500);
-                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
-            }
-        });
-
-        app.post("/game", ctx -> {
-            try {
-                String authToken = ctx.header("Authorization");
-                CreateGameRequest request = gson.fromJson(ctx.body(), CreateGameRequest.class);
-                CreateGameService service = new CreateGameService(authDAO, gameDAO);
-                CreateGameResult result = service.createGame(authToken, request);
-                ctx.status(200);
-                ctx.result(gson.toJson(result));
-            } catch (ServiceException e) {
-                ctx.status(e.statusCode());
-                ctx.result(gson.toJson(Map.of("message", e.getMessage())));
-            } catch (Exception e) {
-                ctx.status(500);
-                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
-            }
-        });
-
-        app.get("/game", ctx -> {
-            try {
-                String authToken = ctx.header("Authorization");
-                ListGamesService service = new ListGamesService(authDAO, gameDAO);
-                ListGamesResult result = service.listGames(authToken);
-                ctx.status(200);
-                ctx.result(gson.toJson(result));
-            } catch (ServiceException e) {
-                ctx.status(e.statusCode());
-                ctx.result(gson.toJson(Map.of("message", e.getMessage())));
-            } catch (Exception e) {
-                ctx.status(500);
-                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
-            }
-        });
-
-        app.put("/game", ctx -> {
-            try {
-                String authToken = ctx.header("Authorization");
-                JoinGameRequest request = gson.fromJson(ctx.body(), JoinGameRequest.class);
-                JoinGameService service = new JoinGameService(authDAO, gameDAO);
-                service.joinGame(authToken, request);
-                ctx.status(200);
-                ctx.result(gson.toJson(Map.of()));
-            } catch (ServiceException e) {
-                ctx.status(e.statusCode());
-                ctx.result(gson.toJson(Map.of("message", e.getMessage())));
-            } catch (Exception e) {
-                ctx.status(500);
-                ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
-            }
-        });
-
-        app.start(desiredPort);
-        return app.port();
+        javalin.start(desiredPort);
+        return javalin.port();
     }
 
     public void stop() {
-        if (app != null) {
-            app.stop();
+        if (javalin != null) {
+            javalin.stop();
         }
+    }
+
+    private void registerRoutes() {
+        javalin.delete("/db", this::clearDatabase);
+        javalin.post("/user", this::registerUser);
+        javalin.post("/session", this::loginUser);
+        javalin.delete("/session", this::logoutUser);
+        javalin.get("/game", this::listGames);
+        javalin.post("/game", this::createGame);
+        javalin.put("/game", this::joinGame);
+    }
+
+    private void clearDatabase(Context ctx) {
+        try {
+            ClearService service = new ClearService(userDAO, authDAO, gameDAO);
+            service.clear();
+            writeSuccess(ctx, Map.of());
+        } catch (ServiceException e) {
+            writeServiceError(ctx, e);
+        } catch (Exception e) {
+            writeServerError(ctx, e);
+        }
+    }
+
+    private void registerUser(Context ctx) {
+        try {
+            RegisterRequest request = gson.fromJson(ctx.body(), RegisterRequest.class);
+            RegisterService service = new RegisterService(userDAO, authDAO);
+            var result = service.register(request);
+            writeSuccess(ctx, result);
+        } catch (ServiceException e) {
+            writeServiceError(ctx, e);
+        } catch (Exception e) {
+            writeServerError(ctx, e);
+        }
+    }
+
+    private void loginUser(Context ctx) {
+        try {
+            LoginRequest request = gson.fromJson(ctx.body(), LoginRequest.class);
+            LoginService service = new LoginService(userDAO, authDAO);
+            var result = service.login(request);
+            writeSuccess(ctx, result);
+        } catch (ServiceException e) {
+            writeServiceError(ctx, e);
+        } catch (Exception e) {
+            writeServerError(ctx, e);
+        }
+    }
+
+    private void logoutUser(Context ctx) {
+        try {
+            String authToken = getAuthToken(ctx);
+            LogoutService service = new LogoutService(authDAO);
+            service.logout(authToken);
+            writeSuccess(ctx, Map.of());
+        } catch (ServiceException e) {
+            writeServiceError(ctx, e);
+        } catch (Exception e) {
+            writeServerError(ctx, e);
+        }
+    }
+
+    private void listGames(Context ctx) {
+        try {
+            String authToken = getAuthToken(ctx);
+            ListGamesService service = new ListGamesService(authDAO, gameDAO);
+            var result = service.listGames(authToken);
+            writeSuccess(ctx, result);
+        } catch (ServiceException e) {
+            writeServiceError(ctx, e);
+        } catch (Exception e) {
+            writeServerError(ctx, e);
+        }
+    }
+
+    private void createGame(Context ctx) {
+        try {
+            String authToken = getAuthToken(ctx);
+            CreateGameRequest request = gson.fromJson(ctx.body(), CreateGameRequest.class);
+            CreateGameService service = new CreateGameService(authDAO, gameDAO);
+            var result = service.createGame(authToken, request);
+            writeSuccess(ctx, result);
+        } catch (ServiceException e) {
+            writeServiceError(ctx, e);
+        } catch (Exception e) {
+            writeServerError(ctx, e);
+        }
+    }
+
+    private void joinGame(Context ctx) {
+        try {
+            String authToken = getAuthToken(ctx);
+            JoinGameRequest request = gson.fromJson(ctx.body(), JoinGameRequest.class);
+            JoinGameService service = new JoinGameService(authDAO, gameDAO);
+            service.joinGame(authToken, request);
+            writeSuccess(ctx, Map.of());
+        } catch (ServiceException e) {
+            writeServiceError(ctx, e);
+        } catch (Exception e) {
+            writeServerError(ctx, e);
+        }
+    }
+
+    private String getAuthToken(Context ctx) {
+        return ctx.header("Authorization");
+    }
+
+    private void writeSuccess(Context ctx, Object body) {
+        ctx.status(200);
+        ctx.json(body);
+    }
+
+    private void writeServiceError(Context ctx, ServiceException e) {
+        ctx.status(e.statusCode());
+        ctx.json(Map.of("message", e.getMessage()));
+    }
+
+    private void writeServerError(Context ctx, Exception e) {
+        ctx.status(500);
+        ctx.json(Map.of("message", "Error: " + e.getMessage()));
     }
 }
