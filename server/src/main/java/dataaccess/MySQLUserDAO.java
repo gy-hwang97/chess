@@ -1,0 +1,58 @@
+package dataaccess;
+
+import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
+
+public class MySQLUserDAO implements UserDAO {
+
+    @Override
+    public void clear() throws DataAccessException {
+        String sql = "DELETE FROM users";
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.prepareStatement(sql)) {
+            stmt.executeUpdate();
+        } catch (Exception ex) {
+            throw new DataAccessException("failed to clear users", ex);
+        }
+    }
+
+    @Override
+    public void createUser(UserData user) throws DataAccessException {
+        String sql = "INSERT INTO users (username, password_hash, email) VALUES (?, ?, ?)";
+        String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, user.username());
+            stmt.setString(2, hashedPassword);
+            stmt.setString(3, user.email());
+            stmt.executeUpdate();
+        } catch (Exception ex) {
+            throw new DataAccessException("failed to create user", ex);
+        }
+    }
+
+    @Override
+    public UserData getUser(String username) throws DataAccessException {
+        String sql = "SELECT username, password_hash, email FROM users WHERE username = ?";
+
+        try (var conn = DatabaseManager.getConnection();
+             var stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username);
+
+            try (var rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new UserData(
+                            rs.getString("username"),
+                            rs.getString("password_hash"),
+                            rs.getString("email")
+                    );
+                }
+            }
+        } catch (Exception ex) {
+            throw new DataAccessException("failed to get user", ex);
+        }
+
+        return null;
+    }
+}
