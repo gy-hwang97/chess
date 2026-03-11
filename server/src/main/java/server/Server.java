@@ -2,10 +2,12 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
+import dataaccess.DatabaseConfigurer;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.MySQLAuthDAO;
+import dataaccess.MySQLGameDAO;
+import dataaccess.MySQLUserDAO;
 import dataaccess.UserDAO;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
@@ -21,26 +23,28 @@ import service.LoginService;
 import service.LogoutService;
 import service.RegisterService;
 import service.ServiceException;
-import dataaccess.DatabaseConfigurer;
-import dataaccess.DataAccessException;
+
 import java.util.Map;
 
 public class Server {
     private final Gson gson = new Gson();
-
-    private final UserDAO userDAO = new MemoryUserDAO();
-    private final AuthDAO authDAO = new MemoryAuthDAO();
-    private final GameDAO gameDAO = new MemoryGameDAO();
-
+    private final UserDAO userDAO = new MySQLUserDAO();
+    private final AuthDAO authDAO = new MySQLAuthDAO();
+    private final GameDAO gameDAO = new MySQLGameDAO();
     private Javalin javalin;
 
     public int run(int desiredPort) {
+        try {
+            DatabaseConfigurer.configureDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
         javalin = Javalin.create(config -> {
             config.staticFiles.add("web");
         });
 
         registerRoutes();
-
         javalin.start(desiredPort);
         return javalin.port();
     }
