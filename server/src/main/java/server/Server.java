@@ -2,12 +2,10 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
-import dataaccess.DatabaseConfigurer;
-import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
-import dataaccess.MySQLAuthDAO;
-import dataaccess.MySQLGameDAO;
-import dataaccess.MySQLUserDAO;
+import dataaccess.MemoryAuthDAO;
+import dataaccess.MemoryGameDAO;
+import dataaccess.MemoryUserDAO;
 import dataaccess.UserDAO;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
@@ -28,22 +26,15 @@ import java.util.Map;
 
 public class Server {
     private final Gson gson = new Gson();
-    private final UserDAO userDAO = new MySQLUserDAO();
-    private final AuthDAO authDAO = new MySQLAuthDAO();
-    private final GameDAO gameDAO = new MySQLGameDAO();
+
+    private final UserDAO userDAO = new MemoryUserDAO();
+    private final AuthDAO authDAO = new MemoryAuthDAO();
+    private final GameDAO gameDAO = new MemoryGameDAO();
+
     private Javalin javalin;
 
     public int run(int desiredPort) {
-        try {
-            DatabaseConfigurer.configureDatabase();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        javalin = Javalin.create(config -> {
-            config.staticFiles.add("web");
-        });
-
+        javalin = Javalin.create(config -> config.staticFiles.add("web"));
         registerRoutes();
         javalin.start(desiredPort);
         return javalin.port();
@@ -67,9 +58,10 @@ public class Server {
 
     private void clearDatabase(Context ctx) {
         try {
-            ClearService service = new ClearService(userDAO, authDAO, gameDAO);
-            service.clear();
-            writeSuccess(ctx, Map.of());
+            new ClearService(userDAO, authDAO, gameDAO).clear();
+            writeOk(ctx, Map.of());
+        } catch (ServiceException e) {
+            writeServiceError(ctx, e);
         } catch (Exception e) {
             writeServerError(ctx, e);
         }
@@ -77,10 +69,9 @@ public class Server {
 
     private void registerUser(Context ctx) {
         try {
-            RegisterRequest request = gson.fromJson(ctx.body(), RegisterRequest.class);
-            RegisterService service = new RegisterService(userDAO, authDAO);
-            var result = service.register(request);
-            writeSuccess(ctx, result);
+            RegisterRequest request = parseBody(ctx, RegisterRequest.class);
+            var result = new RegisterService(userDAO, authDAO).register(request);
+            writeOk(ctx, result);
         } catch (ServiceException e) {
             writeServiceError(ctx, e);
         } catch (Exception e) {
@@ -90,10 +81,9 @@ public class Server {
 
     private void loginUser(Context ctx) {
         try {
-            LoginRequest request = gson.fromJson(ctx.body(), LoginRequest.class);
-            LoginService service = new LoginService(userDAO, authDAO);
-            var result = service.login(request);
-            writeSuccess(ctx, result);
+            LoginRequest request = parseBody(ctx, LoginRequest.class);
+            var result = new LoginService(userDAO, authDAO).login(request);
+            writeOk(ctx, result);
         } catch (ServiceException e) {
             writeServiceError(ctx, e);
         } catch (Exception e) {
@@ -104,9 +94,8 @@ public class Server {
     private void logoutUser(Context ctx) {
         try {
             String authToken = getAuthToken(ctx);
-            LogoutService service = new LogoutService(authDAO);
-            service.logout(authToken);
-            writeSuccess(ctx, Map.of());
+            new LogoutService(authDAO).logout(authToken);
+            writeOk(ctx, Map.of());
         } catch (ServiceException e) {
             writeServiceError(ctx, e);
         } catch (Exception e) {
@@ -117,9 +106,8 @@ public class Server {
     private void listGames(Context ctx) {
         try {
             String authToken = getAuthToken(ctx);
-            ListGamesService service = new ListGamesService(authDAO, gameDAO);
-            var result = service.listGames(authToken);
-            writeSuccess(ctx, result);
+            var result = new ListGamesService(authDAO, gameDAO).listGames(authToken);
+            writeOk(ctx, result);
         } catch (ServiceException e) {
             writeServiceError(ctx, e);
         } catch (Exception e) {
@@ -130,10 +118,9 @@ public class Server {
     private void createGame(Context ctx) {
         try {
             String authToken = getAuthToken(ctx);
-            CreateGameRequest request = gson.fromJson(ctx.body(), CreateGameRequest.class);
-            CreateGameService service = new CreateGameService(authDAO, gameDAO);
-            var result = service.createGame(authToken, request);
-            writeSuccess(ctx, result);
+            CreateGameRequest request = parseBody(ctx, CreateGameRequest.class);
+            var result = new CreateGameService(authDAO, gameDAO).createGame(authToken, request);
+            writeOk(ctx, result);
         } catch (ServiceException e) {
             writeServiceError(ctx, e);
         } catch (Exception e) {
@@ -144,10 +131,9 @@ public class Server {
     private void joinGame(Context ctx) {
         try {
             String authToken = getAuthToken(ctx);
-            JoinGameRequest request = gson.fromJson(ctx.body(), JoinGameRequest.class);
-            JoinGameService service = new JoinGameService(authDAO, gameDAO);
-            service.joinGame(authToken, request);
-            writeSuccess(ctx, Map.of());
+            JoinGameRequest request = parseBody(ctx, JoinGameRequest.class);
+            new JoinGameService(authDAO, gameDAO).joinGame(authToken, request);
+            writeOk(ctx, Map.of());
         } catch (ServiceException e) {
             writeServiceError(ctx, e);
         } catch (Exception e) {
@@ -155,22 +141,41 @@ public class Server {
         }
     }
 
-    private String getAuthToken(Context ctx) {
-        return ctx.header("Authorization");
+    private <T> T parseBody(Context ctx, Class<T> clazz) throws ServiceException {
+        String body = ctx.body();
+        if (body == null || body.isBlank()) {
+            throw new ServiceException(400, "Error: bad request");
+        }
+        T obj = gson.fromJson(body, clazz);
+        if (obj == null) {
+            throw new ServiceException(400, "Error: bad request");
+        }
+        return obj;
     }
 
-    private void writeSuccess(Context ctx, Object body) {
+    private String getAuthToken(Context ctx) throws ServiceException {
+        String token = ctx.header("Authorization");
+        if (token == null || token.isBlank()) {
+            throw new ServiceException(401, "Error: unauthorized");
+        }
+        return token;
+    }
+
+    private void writeOk(Context ctx, Object body) {
         ctx.status(200);
-        ctx.json(body);
+        ctx.contentType("application/json");
+        ctx.result(gson.toJson(body));
     }
 
     private void writeServiceError(Context ctx, ServiceException e) {
         ctx.status(e.statusCode());
-        ctx.json(Map.of("message", e.getMessage()));
+        ctx.contentType("application/json");
+        ctx.result(gson.toJson(Map.of("message", e.getMessage())));
     }
 
     private void writeServerError(Context ctx, Exception e) {
         ctx.status(500);
-        ctx.json(Map.of("message", "Error: " + e.getMessage()));
+        ctx.contentType("application/json");
+        ctx.result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
     }
 }
