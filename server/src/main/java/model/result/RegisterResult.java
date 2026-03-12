@@ -1,4 +1,4 @@
-package model.request;
+package model.result;
 
 public record RegisterResult(String username, String authToken) {
 }
