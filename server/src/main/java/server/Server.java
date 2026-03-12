@@ -60,8 +60,6 @@ public class Server {
         try {
             new ClearService(userDAO, authDAO, gameDAO).clear();
             writeOk(ctx, Map.of());
-        } catch (ServiceException e) {
-            writeServiceError(ctx, e);
         } catch (Exception e) {
             writeServerError(ctx, e);
         }
