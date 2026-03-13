@@ -9,7 +9,7 @@ public class DatabaseManager {
     private static final Properties properties = new Properties();
 
     static {
-        loadProperties(properties);
+        loadPropertiesFromResources();
     }
 
     private static void loadProperties(Properties properties) {
@@ -22,6 +22,10 @@ public class DatabaseManager {
         } catch (Exception e) {
             throw new RuntimeException("Failed to load db.properties", e);
         }
+    }
+
+    private static void loadPropertiesFromResources() {
+        loadProperties(properties);
     }
 
     public static Connection getConnection() throws Exception {
