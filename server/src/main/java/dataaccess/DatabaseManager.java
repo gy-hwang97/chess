@@ -6,34 +6,37 @@ import java.sql.DriverManager;
 import java.util.Properties;
 
 public class DatabaseManager {
-    private static final Properties properties = new Properties();
+    private static final Properties PROPERTIES = new Properties();
 
     static {
         loadPropertiesFromResources();
     }
 
-    private static void loadProperties(Properties properties) {
+    private static void loadProperties(Properties newProperties) {
+        PROPERTIES.clear();
+        PROPERTIES.putAll(newProperties);
+    }
+
+    private static void loadPropertiesFromResources() {
         try {
+            Properties resourceProperties = new Properties();
             InputStream input = DatabaseManager.class.getClassLoader().getResourceAsStream("db.properties");
             if (input == null) {
                 throw new RuntimeException("db.properties not found");
             }
-            properties.load(input);
+            resourceProperties.load(input);
+            loadProperties(resourceProperties);
         } catch (Exception e) {
             throw new RuntimeException("Failed to load db.properties", e);
         }
     }
 
-    private static void loadPropertiesFromResources() {
-        loadProperties(properties);
-    }
-
     public static Connection getConnection() throws Exception {
-        String host = properties.getProperty("db.host");
-        String port = properties.getProperty("db.port");
-        String dbName = properties.getProperty("db.name");
-        String user = properties.getProperty("db.user");
-        String password = properties.getProperty("db.password");
+        String host = PROPERTIES.getProperty("db.host");
+        String port = PROPERTIES.getProperty("db.port");
+        String dbName = PROPERTIES.getProperty("db.name");
+        String user = PROPERTIES.getProperty("db.user");
+        String password = PROPERTIES.getProperty("db.password");
 
         String url = "jdbc:mysql://" + host + ":" + port + "/" + dbName +
                 "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
@@ -42,10 +45,10 @@ public class DatabaseManager {
     }
 
     public static Connection getRootConnection() throws Exception {
-        String host = properties.getProperty("db.host");
-        String port = properties.getProperty("db.port");
-        String user = properties.getProperty("db.user");
-        String password = properties.getProperty("db.password");
+        String host = PROPERTIES.getProperty("db.host");
+        String port = PROPERTIES.getProperty("db.port");
+        String user = PROPERTIES.getProperty("db.user");
+        String password = PROPERTIES.getProperty("db.password");
 
         String url = "jdbc:mysql://" + host + ":" + port +
                 "/?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
@@ -54,6 +57,6 @@ public class DatabaseManager {
     }
 
     public static String getDatabaseName() {
-        return properties.getProperty("db.name");
+        return PROPERTIES.getProperty("db.name");
     }
 }
