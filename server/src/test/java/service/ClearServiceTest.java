@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import dataaccess.MemoryAuthDAO;
@@ -11,13 +12,13 @@ import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.Test;
 
-import chess.ChessGame;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ClearServiceTest {
+
     @Test
-    public void clearPositive() throws Exception {
+    public void clearPositiveTest() throws Exception {
         UserDAO userDAO = new MemoryUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
         GameDAO gameDAO = new MemoryGameDAO();

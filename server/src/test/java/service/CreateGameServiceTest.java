@@ -4,8 +4,7 @@ import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import model.AuthData;
 import org.junit.jupiter.api.Test;
-import model.request.CreateGameRequest;
-import model.result.CreateGameResult;
+import service.requests.CreateGameRequest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -19,21 +18,21 @@ public class CreateGameServiceTest {
 
         authDAO.createAuth(new AuthData("t1", "u1"));
 
-        CreateGameService service = new CreateGameService(authDAO, gameDAO);
-        CreateGameResult result = service.createGame("t1", new CreateGameRequest("g1"));
+        GameService service = new GameService(authDAO, gameDAO);
+        var result = service.createGame(new CreateGameRequest("g1", "t1"));
 
         assertTrue(result.gameID() > 0);
     }
 
     @Test
-    public void createGameNegativeTest() throws Exception {
+    public void createGameNegativeTest() {
         MemoryAuthDAO authDAO = new MemoryAuthDAO();
         MemoryGameDAO gameDAO = new MemoryGameDAO();
 
-        CreateGameService service = new CreateGameService(authDAO, gameDAO);
+        GameService service = new GameService(authDAO, gameDAO);
 
         assertThrows(ServiceException.class, () -> {
-            service.createGame("bad", new CreateGameRequest("g1"));
+            service.createGame(new CreateGameRequest("g1", "bad"));
         });
     }
 }

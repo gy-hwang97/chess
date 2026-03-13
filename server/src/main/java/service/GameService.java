@@ -52,14 +52,6 @@ public class GameService {
             throw new ServiceException(401, "Error: unauthorized");
         }
 
-        if (request.playerColor() == null) {
-            throw new ServiceException(400, "Error: bad request");
-        }
-
-        if (!request.playerColor().equals("WHITE") && !request.playerColor().equals("BLACK")) {
-            throw new ServiceException(400, "Error: bad request");
-        }
-
         GameData game = gameDAO.getGame(request.gameID());
         if (game == null) {
             throw new ServiceException(400, "Error: bad request");
@@ -67,7 +59,7 @@ public class GameService {
 
         GameData updatedGame;
 
-        if (request.playerColor().equals("WHITE")) {
+        if ("WHITE".equals(request.playerColor())) {
             if (game.whiteUsername() != null) {
                 throw new ServiceException(403, "Error: already taken");
             }
@@ -79,7 +71,7 @@ public class GameService {
                     game.gameName(),
                     game.game()
             );
-        } else {
+        } else if ("BLACK".equals(request.playerColor())) {
             if (game.blackUsername() != null) {
                 throw new ServiceException(403, "Error: already taken");
             }
@@ -91,6 +83,8 @@ public class GameService {
                     game.gameName(),
                     game.game()
             );
+        } else {
+            throw new ServiceException(400, "Error: bad request");
         }
 
         try {
@@ -100,10 +94,15 @@ public class GameService {
         }
     }
 
-    private AuthData checkAuth(String authToken) {
-        if (authToken == null || authToken.isBlank()) {
+    private AuthData checkAuth(String token) throws ServiceException {
+        if (token == null || token.isBlank()) {
             return null;
         }
-        return authDAO.getAuth(authToken);
+
+        try {
+            return authDAO.getAuth(token);
+        } catch (DataAccessException e) {
+            throw new ServiceException(500, "Error: " + e.getMessage());
+        }
     }
 }

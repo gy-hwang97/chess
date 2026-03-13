@@ -4,8 +4,7 @@ import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
 import model.UserData;
 import org.junit.jupiter.api.Test;
-import model.request.LoginRequest;
-import model.result.LoginResult;
+import service.requests.LoginRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -20,8 +19,8 @@ public class LoginServiceTest {
 
         userDAO.createUser(new UserData("u1", "p1", "e1"));
 
-        LoginService service = new LoginService(userDAO, authDAO);
-        LoginResult result = service.login(new LoginRequest("u1", "p1"));
+        UserService service = new UserService(userDAO, authDAO);
+        var result = service.login(new LoginRequest("u1", "p1"));
 
         assertEquals("u1", result.username());
         assertNotNull(result.authToken());
@@ -34,7 +33,7 @@ public class LoginServiceTest {
 
         userDAO.createUser(new UserData("u1", "p1", "e1"));
 
-        LoginService service = new LoginService(userDAO, authDAO);
+        UserService service = new UserService(userDAO, authDAO);
 
         assertThrows(ServiceException.class, () -> {
             service.login(new LoginRequest("u1", "wrong"));

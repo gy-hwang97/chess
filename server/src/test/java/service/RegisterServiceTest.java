@@ -3,8 +3,7 @@ package service;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
 import org.junit.jupiter.api.Test;
-import model.request.RegisterRequest;
-import model.result.RegisterResult;
+import service.requests.RegisterRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -16,10 +15,9 @@ public class RegisterServiceTest {
     public void registerPositiveTest() throws Exception {
         MemoryUserDAO userDAO = new MemoryUserDAO();
         MemoryAuthDAO authDAO = new MemoryAuthDAO();
-        RegisterService service = new RegisterService(userDAO, authDAO);
 
-        RegisterRequest request = new RegisterRequest("u1", "p1", "e1");
-        RegisterResult result = service.register(request);
+        UserService service = new UserService(userDAO, authDAO);
+        var result = service.register(new RegisterRequest("u1", "p1", "e1"));
 
         assertEquals("u1", result.username());
         assertNotNull(result.authToken());
@@ -29,8 +27,8 @@ public class RegisterServiceTest {
     public void registerNegativeTest() throws Exception {
         MemoryUserDAO userDAO = new MemoryUserDAO();
         MemoryAuthDAO authDAO = new MemoryAuthDAO();
-        RegisterService service = new RegisterService(userDAO, authDAO);
 
+        UserService service = new UserService(userDAO, authDAO);
         service.register(new RegisterRequest("u1", "p1", "e1"));
 
         assertThrows(ServiceException.class, () -> {
