@@ -27,23 +27,22 @@ public class UserService {
             throw new ServiceException(400, "Error: bad request");
         }
 
-        if (userDAO.getUser(request.username()) != null) {
-            throw new ServiceException(403, "Error: already taken");
-        }
-
-        UserData user = new UserData(request.username(), request.password(), request.email());
-
         try {
+            if (userDAO.getUser(request.username()) != null) {
+                throw new ServiceException(403, "Error: already taken");
+            }
+
+            UserData user = new UserData(request.username(), request.password(), request.email());
             userDAO.createUser(user);
+
+            String token = generateToken();
+            AuthData auth = new AuthData(token, request.username());
+            authDAO.createAuth(auth);
+
+            return new RegisterResult(request.username(), token);
         } catch (DataAccessException e) {
             throw new ServiceException(500, "Error: " + e.getMessage());
         }
-
-        String token = generateToken();
-        AuthData auth = new AuthData(token, request.username());
-        authDAO.createAuth(auth);
-
-        return new RegisterResult(request.username(), token);
     }
 
     public LoginResult login(LoginRequest request) throws ServiceException {
@@ -51,17 +50,21 @@ public class UserService {
             throw new ServiceException(400, "Error: bad request");
         }
 
-        UserData user = userDAO.getUser(request.username());
+        try {
+            UserData user = userDAO.getUser(request.username());
 
-        if (user == null || !user.password().equals(request.password())) {
-            throw new ServiceException(401, "Error: unauthorized");
+            if (user == null || !user.password().equals(request.password())) {
+                throw new ServiceException(401, "Error: unauthorized");
+            }
+
+            String token = generateToken();
+            AuthData auth = new AuthData(token, request.username());
+            authDAO.createAuth(auth);
+
+            return new LoginResult(request.username(), token);
+        } catch (DataAccessException e) {
+            throw new ServiceException(500, "Error: " + e.getMessage());
         }
-
-        String token = generateToken();
-        AuthData auth = new AuthData(token, request.username());
-        authDAO.createAuth(auth);
-
-        return new LoginResult(request.username(), token);
     }
 
     public void logout(LogoutRequest request) throws ServiceException {
@@ -69,13 +72,17 @@ public class UserService {
             throw new ServiceException(401, "Error: unauthorized");
         }
 
-        AuthData auth = authDAO.getAuth(request.authToken());
+        try {
+            AuthData auth = authDAO.getAuth(request.authToken());
 
-        if (auth == null) {
-            throw new ServiceException(401, "Error: unauthorized");
+            if (auth == null) {
+                throw new ServiceException(401, "Error: unauthorized");
+            }
+
+            authDAO.deleteAuth(request.authToken());
+        } catch (DataAccessException e) {
+            throw new ServiceException(500, "Error: " + e.getMessage());
         }
-
-        authDAO.deleteAuth(request.authToken());
     }
 
     private String generateToken() {
