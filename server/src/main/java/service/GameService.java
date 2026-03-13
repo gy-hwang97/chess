@@ -27,7 +27,11 @@ public class GameService {
             throw new ServiceException(401, "Error: unauthorized");
         }
 
-        return new ListGamesResult(gameDAO.listGames());
+        try {
+            return new ListGamesResult(gameDAO.listGames());
+        } catch (DataAccessException e) {
+            throw new ServiceException(500, "Error: " + e.getMessage());
+        }
     }
 
     public CreateGameResult createGame(CreateGameRequest request) throws ServiceException {
@@ -40,10 +44,14 @@ public class GameService {
             throw new ServiceException(400, "Error: bad request");
         }
 
-        GameData game = new GameData(0, null, null, request.gameName(), new ChessGame());
-        int gameID = gameDAO.createGame(game);
+        try {
+            GameData game = new GameData(0, null, null, request.gameName(), new ChessGame());
+            int gameID = gameDAO.createGame(game);
 
-        return new CreateGameResult(gameID);
+            return new CreateGameResult(gameID);
+        } catch (DataAccessException e) {
+            throw new ServiceException(500, "Error: " + e.getMessage());
+        }
     }
 
     public void joinGame(JoinGameRequest request) throws ServiceException {
@@ -52,7 +60,13 @@ public class GameService {
             throw new ServiceException(401, "Error: unauthorized");
         }
 
-        GameData game = gameDAO.getGame(request.gameID());
+        GameData game;
+        try {
+            game = gameDAO.getGame(request.gameID());
+        } catch (DataAccessException e) {
+            throw new ServiceException(500, "Error: " + e.getMessage());
+        }
+
         if (game == null) {
             throw new ServiceException(400, "Error: bad request");
         }

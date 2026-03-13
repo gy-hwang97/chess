@@ -2,6 +2,7 @@ package service;
 
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
+import dataaccess.MySQLUserDAO;
 import dataaccess.UserDAO;
 import model.AuthData;
 import model.UserData;
@@ -53,7 +54,18 @@ public class UserService {
         try {
             UserData user = userDAO.getUser(request.username());
 
-            if (user == null || !user.password().equals(request.password())) {
+            if (user == null) {
+                throw new ServiceException(401, "Error: unauthorized");
+            }
+
+            boolean ok;
+            if (userDAO instanceof MySQLUserDAO mysqlUserDAO) {
+                ok = mysqlUserDAO.verifyUser(request.username(), request.password());
+            } else {
+                ok = user.password().equals(request.password());
+            }
+
+            if (!ok) {
                 throw new ServiceException(401, "Error: unauthorized");
             }
 
