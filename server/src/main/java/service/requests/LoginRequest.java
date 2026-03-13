@@ -1,4 +1,4 @@
-package model.request;
+package service.requests;
 
 public record LoginRequest(String username, String password) {
 }

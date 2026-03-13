@@ -1,34 +1,36 @@
 package service;
 
-import dataaccess.MemoryUserDAO;
+import dataaccess.AuthDAO;
+import dataaccess.GameDAO;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
-import model.UserData;
+import dataaccess.MemoryUserDAO;
+import dataaccess.UserDAO;
 import model.AuthData;
 import model.GameData;
-import chess.ChessGame;
+import model.UserData;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import chess.ChessGame;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ClearServiceTest {
-
     @Test
-    public void clearPositiveTest() throws Exception {
-        MemoryUserDAO userDAO = new MemoryUserDAO();
-        MemoryAuthDAO authDAO = new MemoryAuthDAO();
-        MemoryGameDAO gameDAO = new MemoryGameDAO();
+    public void clearPositive() throws Exception {
+        UserDAO userDAO = new MemoryUserDAO();
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameDAO gameDAO = new MemoryGameDAO();
 
-        userDAO.createUser(new UserData("u1", "p1", "e1"));
-        authDAO.createAuth(new AuthData("t1", "u1"));
-        gameDAO.createGame(new GameData(0, null, null, "g1", new ChessGame()));
+        userDAO.createUser(new UserData("u", "p", "e"));
+        authDAO.createAuth(new AuthData("t", "u"));
+        gameDAO.createGame(new GameData(0, null, null, "g", new ChessGame()));
 
-        ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
-        clearService.clear();
+        ClearService service = new ClearService(userDAO, authDAO, gameDAO);
+        service.clear();
 
-        assertNull(userDAO.getUser("u1"));
-        assertNull(authDAO.getAuth("t1"));
-        assertEquals(0, gameDAO.listGames().size());
+        assertNull(userDAO.getUser("u"));
+        assertNull(authDAO.getAuth("t"));
+        assertTrue(gameDAO.listGames().isEmpty());
     }
 }
