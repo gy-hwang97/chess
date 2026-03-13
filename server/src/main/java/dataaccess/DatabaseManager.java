@@ -9,6 +9,10 @@ public class DatabaseManager {
     private static final Properties properties = new Properties();
 
     static {
+        loadProperties(properties);
+    }
+
+    private static void loadProperties(Properties properties) {
         try {
             InputStream input = DatabaseManager.class.getClassLoader().getResourceAsStream("db.properties");
             if (input == null) {
