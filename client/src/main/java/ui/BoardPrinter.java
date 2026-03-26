@@ -7,11 +7,21 @@ public class BoardPrinter {
         printFileLabels(files);
 
         for (int row = 8; row >= 1; row--) {
-            System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY + EscapeSequences.SET_TEXT_COLOR_BLACK + " " + row + " ");
+            String leftLabel = EscapeSequences.SET_BG_COLOR_DARK_GREY
+                    + EscapeSequences.SET_TEXT_COLOR_BLACK
+                    + " " + row + " ";
+            System.out.print(leftLabel);
+
             for (int col = 1; col <= 8; col++) {
                 drawSquare(row, col);
             }
-            System.out.println(EscapeSequences.SET_BG_COLOR_DARK_GREY + EscapeSequences.SET_TEXT_COLOR_BLACK + " " + row + " " + EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR);
+
+            String rightLabel = EscapeSequences.SET_BG_COLOR_DARK_GREY
+                    + EscapeSequences.SET_TEXT_COLOR_BLACK
+                    + " " + row + " "
+                    + EscapeSequences.RESET_BG_COLOR
+                    + EscapeSequences.RESET_TEXT_COLOR;
+            System.out.println(rightLabel);
         }
 
         printFileLabels(files);
@@ -23,22 +33,38 @@ public class BoardPrinter {
         printFileLabels(files);
 
         for (int row = 1; row <= 8; row++) {
-            System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY + EscapeSequences.SET_TEXT_COLOR_BLACK + " " + row + " ");
+            String leftLabel = EscapeSequences.SET_BG_COLOR_DARK_GREY
+                    + EscapeSequences.SET_TEXT_COLOR_BLACK
+                    + " " + row + " ";
+            System.out.print(leftLabel);
+
             for (int col = 8; col >= 1; col--) {
                 drawSquare(row, col);
             }
-            System.out.println(EscapeSequences.SET_BG_COLOR_DARK_GREY + EscapeSequences.SET_TEXT_COLOR_BLACK + " " + row + " " + EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR);
+
+            String rightLabel = EscapeSequences.SET_BG_COLOR_DARK_GREY
+                    + EscapeSequences.SET_TEXT_COLOR_BLACK
+                    + " " + row + " "
+                    + EscapeSequences.RESET_BG_COLOR
+                    + EscapeSequences.RESET_TEXT_COLOR;
+            System.out.println(rightLabel);
         }
 
         printFileLabels(files);
     }
 
     private static void printFileLabels(char[] files) {
-        System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY + EscapeSequences.SET_TEXT_COLOR_BLACK + "   ");
+        System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY
+                + EscapeSequences.SET_TEXT_COLOR_BLACK
+                + "   ");
+
         for (char file : files) {
             System.out.print(" " + file + " ");
         }
-        System.out.println("   " + EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR);
+
+        System.out.println("   "
+                + EscapeSequences.RESET_BG_COLOR
+                + EscapeSequences.RESET_TEXT_COLOR);
     }
 
     private static void drawSquare(int row, int col) {
@@ -51,10 +77,11 @@ public class BoardPrinter {
         }
 
         String piece = getPieceText(row, col);
+
         if (piece.equals(" ")) {
             System.out.print("   ");
         } else {
-            if (isWhitePiece(row, col)) {
+            if (isWhitePiece(row)) {
                 System.out.print(EscapeSequences.SET_TEXT_COLOR_RED + " " + piece + " ");
             } else {
                 System.out.print(EscapeSequences.SET_TEXT_COLOR_BLUE + " " + piece + " ");
@@ -68,7 +95,7 @@ public class BoardPrinter {
         return (row + col) % 2 == 1;
     }
 
-    private static boolean isWhitePiece(int row, int col) {
+    private static boolean isWhitePiece(int row) {
         return row == 1 || row == 2;
     }
 
@@ -87,16 +114,10 @@ public class BoardPrinter {
             if (col == 3 || col == 6) {
                 return "B";
             }
-            if (row == 1 && col == 4) {
+            if (col == 4) {
                 return "Q";
             }
-            if (row == 1 && col == 5) {
-                return "K";
-            }
-            if (row == 8 && col == 4) {
-                return "Q";
-            }
-            if (row == 8 && col == 5) {
+            if (col == 5) {
                 return "K";
             }
         }
