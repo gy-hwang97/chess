@@ -275,7 +275,7 @@ public class ChessPiece {
         }
         if (getClass() != o.getClass()) {
             return false;
-
+        }
         ChessPiece other = (ChessPiece) o;
         return pieceColor == other.pieceColor && type == other.type;
     }
