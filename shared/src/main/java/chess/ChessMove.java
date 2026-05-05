@@ -62,10 +62,6 @@ public class ChessMove {
                 && promotionPiece == other.promotionPiece;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(startPosition, endPosition, promotionPiece);
-    }
 
     @Override
     public String toString() {
