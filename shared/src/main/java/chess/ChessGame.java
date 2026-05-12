@@ -138,5 +138,4 @@ public class ChessGame {
         }
         return null;
     }
-
 }
