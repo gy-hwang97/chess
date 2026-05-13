@@ -20,6 +20,8 @@ public class ChessGame {
     private boolean whiteRightRookHasMoved = false;
     private boolean blackLeftRookHasMoved = false;
     private boolean blackRightRookHasMoved = false;
+    private ChessMove lastMove = null;
+    private ChessPiece lastMovedPiece = null;
 
     public ChessGame() {
         this.board = new ChessBoard();
@@ -69,6 +71,9 @@ public class ChessGame {
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {
             addCastlingMoves(startPosition, piece.getTeamColor(), candidateMoves);
         }
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+            addEnPassantMoves(startPosition, piece.getTeamColor(), candidateMoves);
+        }
 
         Collection<ChessMove> validMovesList = new ArrayList<>();
         for (ChessMove move : candidateMoves) {
@@ -112,6 +117,13 @@ public class ChessGame {
             isCastling = true;
         }
 
+        boolean isEnPassant = false;
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN
+                && start.getColumn() != end.getColumn()
+                && board.getPiece(end) == null) {
+            isEnPassant = true;
+        }
+
         if (promotion != null) {
             ChessPiece newPiece = new ChessPiece(piece.getTeamColor(), promotion);
             board.addPiece(end, newPiece);
@@ -133,7 +145,14 @@ public class ChessGame {
             }
         }
 
+        if (isEnPassant) {
+            board.addPiece(new ChessPosition(start.getRow(), end.getColumn()), null);
+        }
+
         updateCastlingFlags(piece, start);
+
+        lastMove = move;
+        lastMovedPiece = piece;
 
         if (teamTurn == TeamColor.WHITE) {
             teamTurn = TeamColor.BLACK;
@@ -238,6 +257,17 @@ public class ChessGame {
         ChessPiece movingPiece = board.getPiece(start);
         ChessPiece capturedPiece = board.getPiece(end);
 
+        ChessPosition enPassantSquare = null;
+        ChessPiece enPassantCapturedPawn = null;
+        if (movingPiece != null
+                && movingPiece.getPieceType() == ChessPiece.PieceType.PAWN
+                && start.getColumn() != end.getColumn()
+                && capturedPiece == null) {
+            enPassantSquare = new ChessPosition(start.getRow(), end.getColumn());
+            enPassantCapturedPawn = board.getPiece(enPassantSquare);
+            board.addPiece(enPassantSquare, null);
+        }
+
         board.addPiece(end, movingPiece);
         board.addPiece(start, null);
 
@@ -245,6 +275,10 @@ public class ChessGame {
 
         board.addPiece(start, movingPiece);
         board.addPiece(end, capturedPiece);
+
+        if (enPassantSquare != null) {
+            board.addPiece(enPassantSquare, enPassantCapturedPawn);
+        }
 
         return inCheck;
     }
@@ -264,6 +298,7 @@ public class ChessGame {
         }
         return false;
     }
+
     private void updateCastlingFlags(ChessPiece piece, ChessPosition start) {
         if (piece.getPieceType() == ChessPiece.PieceType.KING) {
             if (piece.getTeamColor() == TeamColor.WHITE) {
@@ -289,6 +324,7 @@ public class ChessGame {
             }
         }
     }
+
     private void addCastlingMoves(ChessPosition kingPosition, TeamColor team, Collection<ChessMove> moves) {
         if (isInCheck(team)) {
             return;
@@ -344,6 +380,43 @@ public class ChessGame {
                 }
             }
         }
+    }
+
+    private void addEnPassantMoves(ChessPosition pawnPosition, TeamColor team, Collection<ChessMove> moves) {
+        if (lastMove == null || lastMovedPiece == null) {
+            return;
+        }
+        if (lastMovedPiece.getPieceType() != ChessPiece.PieceType.PAWN) {
+            return;
+        }
+
+        int lastStartRow = lastMove.getStartPosition().getRow();
+        int lastEndRow = lastMove.getEndPosition().getRow();
+        int lastEndCol = lastMove.getEndPosition().getColumn();
+
+        if (Math.abs(lastStartRow - lastEndRow) != 2) {
+            return;
+        }
+
+        int myRow = pawnPosition.getRow();
+        int myCol = pawnPosition.getColumn();
+
+        if (myRow != lastEndRow) {
+            return;
+        }
+        if (Math.abs(myCol - lastEndCol) != 1) {
+            return;
+        }
+
+        int targetRow;
+        if (team == TeamColor.WHITE) {
+            targetRow = myRow + 1;
+        } else {
+            targetRow = myRow - 1;
+        }
+
+        ChessPosition target = new ChessPosition(targetRow, lastEndCol);
+        moves.add(new ChessMove(pawnPosition, target, null));
     }
 
     private boolean squareIsAttacked(ChessPosition position, TeamColor team) {
