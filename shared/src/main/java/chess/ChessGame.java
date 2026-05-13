@@ -110,6 +110,8 @@ public class ChessGame {
         }
         board.addPiece(start, null);
 
+        updateCastlingFlags(piece, start);
+
         if (teamTurn == TeamColor.WHITE) {
             teamTurn = TeamColor.BLACK;
         } else {
