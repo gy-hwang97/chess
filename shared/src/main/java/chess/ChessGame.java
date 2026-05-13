@@ -14,6 +14,12 @@ public class ChessGame {
 
     private TeamColor teamTurn;
     private ChessBoard board;
+    private boolean whiteKingHasMoved = false;
+    private boolean blackKingHasMoved = false;
+    private boolean whiteLeftRookHasMoved = false;
+    private boolean whiteRightRookHasMoved = false;
+    private boolean blackLeftRookHasMoved = false;
+    private boolean blackRightRookHasMoved = false;
 
     public ChessGame() {
         this.board = new ChessBoard();
@@ -232,6 +238,31 @@ public class ChessGame {
             }
         }
         return false;
+    }
+    private void updateCastlingFlags(ChessPiece piece, ChessPosition start) {
+        if (piece.getPieceType() == ChessPiece.PieceType.KING) {
+            if (piece.getTeamColor() == TeamColor.WHITE) {
+                whiteKingHasMoved = true;
+            } else {
+                blackKingHasMoved = true;
+            }
+        }
+        if (piece.getPieceType() == ChessPiece.PieceType.ROOK) {
+            int row = start.getRow();
+            int col = start.getColumn();
+            if (row == 1 && col == 1) {
+                whiteLeftRookHasMoved = true;
+            }
+            if (row == 1 && col == 8) {
+                whiteRightRookHasMoved = true;
+            }
+            if (row == 8 && col == 1) {
+                blackLeftRookHasMoved = true;
+            }
+            if (row == 8 && col == 8) {
+                blackRightRookHasMoved = true;
+            }
+        }
     }
 
     @Override
