@@ -47,7 +47,14 @@ public class UserService {
     }
 
     public LoginResult login(LoginRequest request)
-            throws DataAccessException, UnauthorizedException {
+            throws DataAccessException, UnauthorizedException, BadRequestException {
+
+        if (request.username() == null || request.password() == null) {
+            throw new BadRequestException("bad request");
+        }
+        if (request.username().isEmpty() || request.password().isEmpty()) {
+            throw new BadRequestException("bad request");
+        }
 
         UserData user = userDAO.getUser(request.username());
         if (user == null) {
