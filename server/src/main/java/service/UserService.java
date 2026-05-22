@@ -45,4 +45,32 @@ public class UserService {
 
         return new RegisterResult(request.username(), token);
     }
+
+    public LoginResult login(LoginRequest request)
+            throws DataAccessException, UnauthorizedException {
+
+        UserData user = userDAO.getUser(request.username());
+        if (user == null) {
+            throw new UnauthorizedException("unauthorized");
+        }
+        if (!user.password().equals(request.password())) {
+            throw new UnauthorizedException("unauthorized");
+        }
+
+        String token = UUID.randomUUID().toString();
+        AuthData authData = new AuthData(token, request.username());
+        authDAO.createAuth(authData);
+
+        return new LoginResult(request.username(), token);
+    }
+
+    public void logout(String authToken)
+            throws DataAccessException, UnauthorizedException {
+
+        AuthData auth = authDAO.getAuth(authToken);
+        if (auth == null) {
+            throw new UnauthorizedException("unauthorized");
+        }
+        authDAO.deleteAuth(authToken);
+    }
 }
