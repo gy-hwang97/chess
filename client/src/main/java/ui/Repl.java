@@ -6,14 +6,14 @@ import java.util.Scanner;
 
 public class Repl {
 
-    private final PreloginClient preloginClient;
+    private final Prelogin preloginClient;
     private final PostloginClient postloginClient;
     private State state = State.LOGGED_OUT;
     private String authToken = null;
 
     public Repl(int port) {
         ServerFacade facade = new ServerFacade(port);
-        this.preloginClient = new PreloginClient(facade, this);
+        this.preloginClient = new Prelogin(facade, this);
         this.postloginClient = new PostloginClient(facade, this);
     }
 
