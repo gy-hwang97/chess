@@ -6,15 +6,15 @@ import java.util.Scanner;
 
 public class Repl {
 
-    private final Prelogin preloginClient;
-    private final PostloginClient postloginClient;
+    private final Prelogin prelogin;
+    private final Postlogin postlogin;
     private State state = State.LOGGED_OUT;
     private String authToken = null;
 
     public Repl(int port) {
         ServerFacade facade = new ServerFacade(port);
-        this.preloginClient = new Prelogin(facade, this);
-        this.postloginClient = new PostloginClient(facade, this);
+        this.prelogin = new Prelogin(facade, this);
+        this.postlogin = new Postlogin(facade, this);
     }
 
     public void run() {
@@ -32,9 +32,9 @@ public class Repl {
 
             String result;
             if (state == State.LOGGED_OUT) {
-                result = preloginClient.eval(input);
+                result = prelogin.eval(input);
             } else {
-                result = postloginClient.eval(input);
+                result = postlogin.eval(input);
             }
             System.out.println(result);
         }

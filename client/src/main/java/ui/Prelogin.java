@@ -1,66 +1,74 @@
 package ui;
 
+import client.ResponseException;
 import client.ServerFacade;
+import model.AuthData;
 
-import java.util.Scanner;
+public class Prelogin {
 
-public class Repl {
+    private final ServerFacade facade;
+    private final Repl repl;
 
-    private final Prelogin prelogin;
-    private final Postlogin postlogin;
-    private State state = State.LOGGED_OUT;
-    private String authToken = null;
-
-    public Repl(int port) {
-        ServerFacade facade = new ServerFacade(port);
-        this.prelogin = new Prelogin(facade, this);
-        this.postlogin = new Postlogin(facade, this);
+    public Prelogin(ServerFacade facade, Repl repl) {
+        this.facade = facade;
+        this.repl = repl;
     }
 
-    public void run() {
-        System.out.println("\u265A Welcome to 240 chess. Type Help to get started. \u265A");
-        Scanner scanner = new Scanner(System.in);
+    public String eval(String input) {
+        String[] parts = input.trim().split("\\s+");
+        if (parts.length == 0 || parts[0].isEmpty()) {
+            return help();
+        }
+        String cmd = parts[0].toLowerCase();
 
-        while (true) {
-            printPrompt();
-            String input = scanner.nextLine();
+        if (cmd.equals("help")) {
+            return help();
+        }
+        if (cmd.equals("register")) {
+            return register(parts);
+        }
+        if (cmd.equals("login")) {
+            return login(parts);
+        }
+        if (cmd.equals("quit")) {
+            return "";
+        }
+        return "Unknown command. Type 'help' for options.";
+    }
 
-            if (input.trim().equalsIgnoreCase("quit")) {
-                System.out.println("Goodbye!");
-                break;
-            }
+    private String help() {
+        return "register <USERNAME> <PASSWORD> <EMAIL> - to create an account\n"
+                + "login <USERNAME> <PASSWORD> - to play chess\n"
+                + "quit - playing chess\n"
+                + "help - with possible commands";
+    }
 
-            String result;
-            if (state == State.LOGGED_OUT) {
-                result = prelogin.eval(input);
-            } else {
-                result = postlogin.eval(input);
-            }
-            System.out.println(result);
+    private String register(String[] parts) {
+        if (parts.length != 4) {
+            return "Usage: register <USERNAME> <PASSWORD> <EMAIL>";
+        }
+        try {
+            AuthData auth = facade.register(parts[1], parts[2], parts[3]);
+            repl.setAuthToken(auth.authToken());
+            repl.setState(State.LOGGED_IN);
+            return "Logged in as " + parts[1];
+        } catch (ResponseException e) {
+            return "Error: " + e.getMessage();
         }
     }
 
-    private void printPrompt() {
-        if (state == State.LOGGED_OUT) {
-            System.out.print("[LOGGED_OUT] >>> ");
-        } else {
-            System.out.print("[LOGGED_IN] >>> ");
+    private String login(String[] parts) {
+        if (parts.length != 3) {
+            return "Usage: login <USERNAME> <PASSWORD>";
         }
-    }
 
-    public State getState() {
-        return state;
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }
-
-    public String getAuthToken() {
-        return authToken;
-    }
-
-    public void setAuthToken(String authToken) {
-        this.authToken = authToken;
+        try {
+            AuthData auth = facade.login(parts[1], parts[2]);
+            repl.setAuthToken(auth.authToken());
+            repl.setState(State.LOGGED_IN);
+            return "Logged in as " + parts[1];
+        } catch (ResponseException e) {
+            return "Error: " + e.getMessage();
+        }
     }
 }
