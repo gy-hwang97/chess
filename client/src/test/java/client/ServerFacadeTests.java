@@ -31,13 +31,18 @@ public class ServerFacadeTests {
     }
 
     @BeforeEach
-    public void clearDatabase() throws ResponseException {
+    public void setup() throws ResponseException {
         facade.clear();
+    }
+
+    // helper so I don't keep typing the same register call
+    private AuthData registerPlayer1() throws ResponseException {
+        return facade.register("player1", "password", "player1@email.com");
     }
 
     @Test
     public void registerSuccess() throws ResponseException {
-        AuthData auth = facade.register("player1", "password", "p1@email.com");
+        AuthData auth = facade.register("player1", "password", "player1@email.com");
         assertNotNull(auth.authToken());
         assertTrue(auth.authToken().length() > 10);
         assertEquals("player1", auth.username());
@@ -45,54 +50,52 @@ public class ServerFacadeTests {
 
     @Test
     public void registerDuplicateThrows() throws ResponseException {
-        facade.register("player1", "password", "p1@email.com");
-        assertThrows(ResponseException.class,
-                () -> facade.register("player1", "different", "other@email.com"));
+        registerPlayer1();
+        assertThrows(ResponseException.class, () -> {
+            facade.register("player1", "different", "other@email.com");
+        });
     }
 
     @Test
     public void loginSuccess() throws ResponseException {
-        facade.register("player1", "password", "p1@email.com");
+        registerPlayer1();
         AuthData auth = facade.login("player1", "password");
-        assertNotNull(auth.authToken());
         assertEquals("player1", auth.username());
+        assertNotNull(auth.authToken());
     }
 
     @Test
-    public void loginWrongPasswordThrows() throws ResponseException {
-        facade.register("player1", "password", "p1@email.com");
-        assertThrows(ResponseException.class,
-                () -> facade.login("player1", "wrong"));
+    public void loginWrongPassword() throws ResponseException {
+        registerPlayer1();
+        assertThrows(ResponseException.class, () -> facade.login("player1", "wrong"));
     }
 
     @Test
     public void logoutSuccess() throws ResponseException {
-        AuthData auth = facade.register("player1", "password", "p1@email.com");
+        AuthData auth = registerPlayer1();
         assertDoesNotThrow(() -> facade.logout(auth.authToken()));
     }
 
     @Test
-    public void logoutInvalidTokenThrows() {
-        assertThrows(ResponseException.class,
-                () -> facade.logout("invalid-token"));
+    public void logoutBadToken() {
+        assertThrows(ResponseException.class, () -> facade.logout("invalid-token"));
     }
 
     @Test
     public void createGameSuccess() throws ResponseException {
-        AuthData auth = facade.register("player1", "password", "p1@email.com");
+        AuthData auth = registerPlayer1();
         int gameID = facade.createGame(auth.authToken(), "My Game");
         assertTrue(gameID > 0);
     }
 
     @Test
-    public void createGameUnauthorizedThrows() {
-        assertThrows(ResponseException.class,
-                () -> facade.createGame("bad-token", "My Game"));
+    public void createGameNoAuth() {
+        assertThrows(ResponseException.class, () -> facade.createGame("bad-token", "My Game"));
     }
 
     @Test
     public void listGamesSuccess() throws ResponseException {
-        AuthData auth = facade.register("player1", "password", "p1@email.com");
+        AuthData auth = registerPlayer1();
         facade.createGame(auth.authToken(), "Game 1");
         facade.createGame(auth.authToken(), "Game 2");
 
@@ -101,33 +104,31 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void listGamesUnauthorizedThrows() {
-        assertThrows(ResponseException.class,
-                () -> facade.listGames("bad-token"));
+    public void listGamesNoAuth() {
+        assertThrows(ResponseException.class, () -> facade.listGames("bad-token"));
     }
 
     @Test
     public void joinGameSuccess() throws ResponseException {
-        AuthData auth = facade.register("player1", "password", "p1@email.com");
+        AuthData auth = registerPlayer1();
         int gameID = facade.createGame(auth.authToken(), "Joinable");
-
         assertDoesNotThrow(() -> facade.joinGame(auth.authToken(), "WHITE", gameID));
     }
 
+    // try to take a color that's already taken
     @Test
-    public void joinGameColorTakenThrows() throws ResponseException {
-        AuthData auth1 = facade.register("player1", "password", "p1@email.com");
-        AuthData auth2 = facade.register("player2", "password", "p2@email.com");
-        int gameID = facade.createGame(auth1.authToken(), "Contested");
+    public void joinGameColorTaken() throws ResponseException {
+        AuthData a1 = registerPlayer1();
+        AuthData a2 = facade.register("player2", "password", "player2@email.com");
+        int gameID = facade.createGame(a1.authToken(), "Contested");
 
-        facade.joinGame(auth1.authToken(), "WHITE", gameID);
-        assertThrows(ResponseException.class,
-                () -> facade.joinGame(auth2.authToken(), "WHITE", gameID));
+        facade.joinGame(a1.authToken(), "WHITE", gameID);
+        assertThrows(ResponseException.class, () -> facade.joinGame(a2.authToken(), "WHITE", gameID));
     }
 
     @Test
     public void clearSuccess() throws ResponseException {
-        facade.register("player1", "password", "p1@email.com");
+        registerPlayer1();
         assertDoesNotThrow(() -> facade.clear());
     }
 }
