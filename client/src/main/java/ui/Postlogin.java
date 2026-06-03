@@ -1,9 +1,5 @@
 package ui;
 
-public class Postlogin {
-}
-package ui;
-
 import chess.ChessGame;
 import client.ResponseException;
 import client.ServerFacade;
