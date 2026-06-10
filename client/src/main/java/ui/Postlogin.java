@@ -79,7 +79,7 @@ public class Postlogin {
             facade.createGame(repl.getAuthToken(), parts[1]);
             return "Created game: " + parts[1];
         } catch (ResponseException e) {
-            return "Error: " + e.getMessage();
+            return e.getMessage();
         }
     }
 
