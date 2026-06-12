@@ -153,9 +153,10 @@ public class Postlogin {
                 side = ChessGame.TeamColor.BLACK;
             }
 
-            return "Joined game as " + color + "\n" + ChessBoardRenderer.drawInitialBoard(side);
+            repl.enterGameplay(repl.getAuthToken(), gameID, side);
+            return "";
         } catch (ResponseException e) {
-            return "Error: " + e.getMessage();
+            return e.getMessage();
         }
     }
 
@@ -172,6 +173,9 @@ public class Postlogin {
         if (!gameList.containsKey(n)) {
             return "Game number not found. Run 'list' first.";
         }
-        return "Observing game\n" + ChessBoardRenderer.drawInitialBoard(ChessGame.TeamColor.WHITE);
+        int gameID = gameList.get(n);
+
+        repl.enterGameplay(repl.getAuthToken(), gameID, null);
+        return "";
     }
 }
