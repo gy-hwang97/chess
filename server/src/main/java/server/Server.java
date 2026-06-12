@@ -12,6 +12,7 @@ import dataaccess.MySqlUserDAO;
 import dataaccess.UnauthorizedException;
 import dataaccess.UserDAO;
 import io.javalin.Javalin;
+import server.websocket.WebSocketHandler;
 import service.ClearService;
 import service.CreateGameRequest;
 import service.CreateGameResult;
@@ -36,6 +37,7 @@ public class Server {
     private final ClearService clearService;
     private final UserService userService;
     private final GameService gameService;
+    private final WebSocketHandler webSocketHandler;
 
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
@@ -51,6 +53,7 @@ public class Server {
         clearService = new ClearService(userDAO, authDAO, gameDAO);
         userService = new UserService(userDAO, authDAO);
         gameService = new GameService(authDAO, gameDAO);
+        webSocketHandler = new WebSocketHandler(authDAO, gameDAO);
 
         javalin.exception(AlreadyTakenException.class, (e, ctx) -> {
             ctx.status(403);
@@ -75,6 +78,10 @@ public class Server {
         javalin.exception(Exception.class, (e, ctx) -> {
             ctx.status(500);
             ctx.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        });
+
+        javalin.ws("/ws", ws -> {
+            ws.onMessage(ctx -> webSocketHandler.handle(ctx));
         });
 
         javalin.delete("/db", ctx -> {
