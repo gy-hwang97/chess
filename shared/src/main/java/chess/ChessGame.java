@@ -22,6 +22,7 @@ public class ChessGame {
     private boolean blackRightRookHasMoved = false;
     private ChessMove lastMove = null;
     private ChessPiece lastMovedPiece = null;
+    private boolean gameOver = false;
 
     public ChessGame() {
         this.board = new ChessBoard();
@@ -228,6 +229,14 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
     }
 
     private ChessPosition findKing(TeamColor teamColor) {

@@ -2,8 +2,13 @@ package ui;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import static ui.EscapeSequences.*;
 
@@ -14,22 +19,38 @@ public class ChessBoardRenderer {
     public static String drawInitialBoard(ChessGame.TeamColor perspective) {
         ChessBoard board = new ChessBoard();
         board.resetBoard();
-        return drawBoard(board, perspective);
+        return render(board, perspective, null, new HashSet<>());
     }
 
     public static String drawBoard(ChessBoard board, ChessGame.TeamColor perspective) {
+        return render(board, perspective, null, new HashSet<>());
+    }
+
+    public static String drawBoardWithHighlights(ChessBoard board, ChessGame.TeamColor perspective,
+                                                 ChessPosition selected, Collection<ChessMove> legalMoves) {
+        Set<ChessPosition> targets = new HashSet<>();
+        if (legalMoves != null) {
+            for (ChessMove move : legalMoves) {
+                targets.add(move.getEndPosition());
+            }
+        }
+        return render(board, perspective, selected, targets);
+    }
+
+    private static String render(ChessBoard board, ChessGame.TeamColor perspective,
+                                 ChessPosition selected, Set<ChessPosition> targets) {
         StringBuilder sb = new StringBuilder();
         sb.append(drawColumnLabels(perspective));
         sb.append("\n");
 
         if (perspective == ChessGame.TeamColor.WHITE) {
             for (int row = 8; row >= 1; row--) {
-                sb.append(drawRow(board, row, perspective));
+                sb.append(drawRow(board, row, perspective, selected, targets));
                 sb.append("\n");
             }
         } else {
             for (int row = 1; row <= 8; row++) {
-                sb.append(drawRow(board, row, perspective));
+                sb.append(drawRow(board, row, perspective, selected, targets));
                 sb.append("\n");
             }
         }
@@ -62,7 +83,8 @@ public class ChessBoardRenderer {
         return sb.toString();
     }
 
-    private static String drawRow(ChessBoard board, int row, ChessGame.TeamColor perspective) {
+    private static String drawRow(ChessBoard board, int row, ChessGame.TeamColor perspective,
+                                  ChessPosition selected, Set<ChessPosition> targets) {
         StringBuilder sb = new StringBuilder();
         sb.append(SET_BG_COLOR_LIGHT_GREY);
         sb.append(SET_TEXT_COLOR_BLACK);
@@ -73,11 +95,11 @@ public class ChessBoardRenderer {
 
         if (perspective == ChessGame.TeamColor.WHITE) {
             for (int col = 1; col <= 8; col++) {
-                sb.append(drawSquare(board, row, col));
+                sb.append(drawSquare(board, row, col, selected, targets));
             }
         } else {
             for (int col = 8; col >= 1; col--) {
-                sb.append(drawSquare(board, row, col));
+                sb.append(drawSquare(board, row, col, selected, targets));
             }
         }
 
@@ -91,16 +113,23 @@ public class ChessBoardRenderer {
         return sb.toString();
     }
 
-    private static String drawSquare(ChessBoard board, int row, int col) {
+    private static String drawSquare(ChessBoard board, int row, int col,
+                                     ChessPosition selected, Set<ChessPosition> targets) {
         StringBuilder sb = new StringBuilder();
+        ChessPosition pos = new ChessPosition(row, col);
         boolean light = (row + col) % 2 != 0;
-        if (light) {
+
+        if (selected != null && selected.equals(pos)) {
+            sb.append(SET_BG_COLOR_YELLOW);
+        } else if (targets.contains(pos)) {
+            sb.append(SET_BG_COLOR_GREEN);
+        } else if (light) {
             sb.append(SET_BG_COLOR_WHITE);
         } else {
             sb.append(SET_BG_COLOR_BLACK);
         }
 
-        ChessPiece piece = board.getPiece(new ChessPosition(row, col));
+        ChessPiece piece = board.getPiece(pos);
         sb.append(pieceToString(piece));
         sb.append(RESET_BG_COLOR);
         return sb.toString();
