@@ -16,12 +16,6 @@ public class ChessBoardRenderer {
 
     private static final String EMPTY = "   ";
 
-    public static String drawInitialBoard(ChessGame.TeamColor perspective) {
-        ChessBoard board = new ChessBoard();
-        board.resetBoard();
-        return render(board, perspective, null, new HashSet<>());
-    }
-
     public static String drawBoard(ChessBoard board, ChessGame.TeamColor perspective) {
         return render(board, perspective, null, new HashSet<>());
     }
